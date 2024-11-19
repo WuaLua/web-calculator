@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雄辉威武成分配方计算器</title>
+    <style>
+        /* 通用样式 */
+        body {
+            font-family: "Arial", sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px 30px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8em;
+            color: #4a90e2;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #555;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        select:focus, input:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+        }
+
+        button {
+            background: #4a90e2;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background: #357abd;
+        }
+
+        .result {
+            margin-top: 20px;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .result p {
+            margin: 0 0 10px;
+        }
+
+        .result ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .result li {
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e0e0;
+            color: #333;
+        }
+
+        .result li:last-child {
+            border-bottom: none;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        footer a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>雄辉威武成分配方计算器</h1>
+        <label for="main-menu">用料：</label>
+        <select id="main-menu" onchange="updateSubMenu()">
+            <option value="黑料">黑料</option>
+            <option value="蓝料">蓝料</option>
+            <option value="白料">白料</option>
+        </select>
+
+        <label for="sub-menu">配方：</label>
+        <select id="sub-menu">
+            <!-- 动态生成的配方菜单 -->
+        </select>
+
+        <label for="ingredient-menu">选择需要输入真实重量的成分：</label>
+        <select id="ingredient-menu">
+            <option value="编织袋">编织袋</option>
+            <option value="纸渣料">纸渣料</option>
+            <option value="石粉">石粉</option>
+            <option value="色粉">色粉</option>
+        </select>
+
+        <label for="input-weight">输入成分重量（kg）：</label>
+        <input type="number" step="0.1" id="input-weight" placeholder="例如：10.5">
+
+        <button onclick="calculateWeights()">确定</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <footer>
+        &copy; 2024 配方计算器 | <a href="#">联系我们</a>
+    </footer>
+
+    <script>
+        const ratios = {
+            黑料: {
+                配方1: { 编织袋: 1, 石粉: 1.17, 色粉: x => (1 + 1.17) * 0.02 },
+                配方2: { 纸渣料: 1, 石粉: 0.6, 色粉: x => (1 + 0.6) * 0.02 },
+                配方3: { 编织袋: 7, 纸渣料: 3, 石粉: 9.99, 色粉: x => (7 + 3 + 9.99) * 0.02 }
+            },
+            蓝料: {
+                配方1: { 编织袋: 1, 石粉: 1.5, 色粉: x => (1 + 1.5) * 0.002 },
+                配方2: { 纸渣料: 1, 石粉: 1, 色粉: x => (1 + 1) * 0.002 },
+                配方3: { 编织袋: 7, 纸渣料: 3, 石粉: 13.5, 色粉: x => (7 + 3 + 13.5) * 0.002 }
+            },
+            白料: {
+                配方1: { 编织袋: 1, 石粉: 1.7, 色粉: x => (1 + 1.7) * 0.002 },
+                配方2: { 纸渣料: 1, 石粉: 1.2, 色粉: x => (1 + 1.2) * 0.002 },
+                配方3: { 编织袋: 7, 纸渣料: 3, 石粉: 15.5, 色粉: x => (7 + 3 + 15.5) * 0.002 }
+            }
+        };
+
+        function updateSubMenu() {
+            const mainMenu = document.getElementById('main-menu').value;
+            const subMenu = document.getElementById('sub-menu');
+            subMenu.innerHTML = '';
+
+            for (let recipe in ratios[mainMenu]) {
+                const option = document.createElement('option');
+                option.value = recipe;
+                option.textContent = recipe;
+                subMenu.appendChild(option);
+            }
+        }
+
+        function calculateWeights() {
+            const mainMenu = document.getElementById('main-menu').value;
+            const subMenu = document.getElementById('sub-menu').value;
+            const ingredient = document.getElementById('ingredient-menu').value;
+            const inputWeight = parseFloat(document.getElementById('input-weight').value) || 0;
+            const resultDiv = document.getElementById('result');
+
+            if (!ratios[mainMenu] || !ratios[mainMenu][subMenu]) {
+                resultDiv.textContent = "请先选择有效的配方！";
+                return;
+            }
+
+            const selectedRecipe = ratios[mainMenu][subMenu];
+
+            // 验证成分是否在配方中
+            if (!(ingredient in selectedRecipe)) {
+                resultDiv.textContent = "配料错误：所选成分不属于当前配方！";
+                return;
+            }
+
+            const baseWeight = inputWeight / (selectedRecipe[ingredient] || 1);
+            let resultHTML = `<p>当前成分 (${ingredient}) 重量：${inputWeight.toFixed(1)} kg</p>`;
+            resultHTML += '<p>最终成分重量：</p><ul>';
+
+            for (let comp in selectedRecipe) {
+                const ratio = selectedRecipe[comp];
+                const weight = comp === ingredient ? inputWeight : typeof ratio === 'function' ? ratio(baseWeight) : baseWeight * ratio;
+                resultHTML += `<li>${comp}: ${weight.toFixed(1)} kg</li>`;
+            }
+
+            resultHTML += '</ul>';
+            resultDiv.innerHTML = resultHTML;
+        }
+
+        // 初始化
+        updateSubMenu();
+    </script>
+</body>
+</html>
